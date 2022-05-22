@@ -19,6 +19,7 @@ Pacman agents (in searchAgents.py).
 
 import util
 
+
 class SearchProblem:
     """
     This class outlines the structure of a search problem, but doesn't implement
@@ -70,7 +71,8 @@ def tinyMazeSearch(problem):
     from game import Directions
     s = Directions.SOUTH
     w = Directions.WEST
-    return  [s, s, w, s, w, w, s, w]
+    return [s, s, w, s, w, w, s, w]
+
 
 def depthFirstSearch(problem):
     """
@@ -87,17 +89,128 @@ def depthFirstSearch(problem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
+    # print("Start:", problem.getStartState())
+    # print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
+    # print("Start's successors:", problem.getSuccessors(problem.getStartState()))
+    openStack = util.Stack()
+    openStack.push(problem.getStartState())
+    closed = []
+    result = []
+    flag = 1
+    while not openStack.isEmpty():
+        x = openStack.pop()
+        if flag == 2:
+            if problem.isGoalState(x[0]):
+                return x[1].split(" ")[::-1]
+            else:
+                child = problem.getSuccessors(x[0])
+                closed.append(x[0])
+            for c in child:
+                if c[0] not in closed:
+                    c = list(c)
+                    c[1] = c[1] + " " + x[1]
+                    c = tuple(c)
+                    openStack.push(c)
+        else:
+            if problem.isGoalState(x):
+                return result
+            else:
+                child = problem.getSuccessors(x)
+                closed.append(x)
+            for c in child:
+                if c[0] not in closed:
+                    openStack.push(c)
+        flag = 2
     util.raiseNotDefined()
+
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
+    open_queue = util.Queue()
+    open_queue.push(problem.getStartState())
+    open_node = []
+    closed = []
+    result = []
+    flag = 1
+    while not open_queue.isEmpty():
+        x = open_queue.pop()
+        if flag == 2:
+            open_node.remove(x[0])
+            if problem.isGoalState(x[0]):
+                return x[1].split(" ")[::-1]
+            else:
+                child = problem.getSuccessors(x[0])
+                closed.append(x[0])
+            for c in child:
+                if c[0] not in closed and c[0] not in open_node:
+                    c = list(c)
+                    c[1] = c[1] + " " + x[1]
+                    c = tuple(c)
+                    open_queue.push(c)
+                    open_node.append(c[0])
+        else:
+            if problem.isGoalState(x):
+                return result
+            else:
+                child = problem.getSuccessors(x)
+                closed.append(x)
+            for c in child:
+                if c[0] not in closed:
+                    open_queue.push(c)
+                    open_node.append(c[0])
+        flag = 2
     util.raiseNotDefined()
+
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
+    open_queue = util.PriorityQueue()
+    open_queue.push(problem.getStartState(), 0)
+    open_node = []
+    closed = []
+    result = []
+    result_dict = dict()
+    flag = 1
+    while not open_queue.isEmpty():
+        x = open_queue.pop()
+        if flag == 2:
+            open_node.remove(x[0])
+            if problem.isGoalState(x[0]):
+                return result_dict[x[0]].split(" ")[::-1]
+            else:
+                child = problem.getSuccessors(x[0])
+                closed.append(x[0])
+            for c in child:
+                if c[0] not in closed and c[0] not in open_node:
+                    c = list(c)
+                    c[1] = c[1] + " " + result_dict[x[0]]
+                    c = tuple(c)
+                    result_dict[c[0]] = c[1]
+                    open_queue.push(c[0], problem.getCostOfActions(c[1].split(" ")[::-1]))
+                    open_node.append(c[0])
+                elif c[0] not in closed and c[0] in open_node:
+                    c = list(c)
+                    c[1] = c[1] + " " + result_dict[x[0]]
+                    c = tuple(c)
+                    result_dict[c[0]] = c[1]
+                    open_queue.update(c[0], problem.getCostOfActions(c[1].split(" ")[::-1]))
+            result_dict.pop(x[0])
+        else:
+            if problem.isGoalState(x):
+                return result
+            else:
+                child = problem.getSuccessors(x)
+                closed.append(x)
+            for c in child:
+                if c[0] not in closed:
+                    open_queue.push(c[0], problem.getCostOfActions(c[1].split(" ")[::-1]))
+                    result_dict[c[0]] = c[1]
+                    open_node.append(c[0])
+        flag = 2
     util.raiseNotDefined()
+
 
 def nullHeuristic(state, problem=None):
     """
@@ -105,6 +218,7 @@ def nullHeuristic(state, problem=None):
     goal in the provided SearchProblem.  This heuristic is trivial.
     """
     return 0
+
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
