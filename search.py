@@ -176,27 +176,30 @@ def uniformCostSearch(problem):
     while not open_queue.isEmpty():
         x = open_queue.pop()
         if flag == 2:
-            open_node.remove(x[0])
-            if problem.isGoalState(x[0]):
-                return result_dict[x[0]].split(" ")[::-1]
+            open_node.remove(x)
+            if problem.isGoalState(x):
+                return result_dict[x].split(" ")[::-1]
             else:
-                child = problem.getSuccessors(x[0])
-                closed.append(x[0])
+                child = problem.getSuccessors(x)
+                closed.append(x)
             for c in child:
                 if c[0] not in closed and c[0] not in open_node:
                     c = list(c)
-                    c[1] = c[1] + " " + result_dict[x[0]]
+                    c[1] = c[1] + " " + result_dict[x]
                     c = tuple(c)
                     result_dict[c[0]] = c[1]
                     open_queue.push(c[0], problem.getCostOfActions(c[1].split(" ")[::-1]))
                     open_node.append(c[0])
-                elif c[0] not in closed and c[0] in open_node:
+                elif c[0] in open_node:
                     c = list(c)
-                    c[1] = c[1] + " " + result_dict[x[0]]
+                    c[1] = c[1] + " " + result_dict[x]
                     c = tuple(c)
-                    result_dict[c[0]] = c[1]
-                    open_queue.update(c[0], problem.getCostOfActions(c[1].split(" ")[::-1]))
-            result_dict.pop(x[0])
+                    new_cost = problem.getCostOfActions(c[1].split(" ")[::-1])
+                    old_cost = problem.getCostOfActions(result_dict[c[0]].split(" ")[::-1])
+                    if new_cost < old_cost:
+                        result_dict[c[0]] = c[1]
+                        open_queue.update(c[0], problem.getCostOfActions(c[1].split(" ")[::-1]))
+            result_dict.pop(x)
         else:
             if problem.isGoalState(x):
                 return result
