@@ -198,7 +198,7 @@ def uniformCostSearch(problem):
                     old_cost = problem.getCostOfActions(result_dict[c[0]].split(" ")[::-1])
                     if new_cost < old_cost:
                         result_dict[c[0]] = c[1]
-                        open_queue.update(c[0], problem.getCostOfActions(c[1].split(" ")[::-1]))
+                        open_queue.update(c[0], new_cost)
             result_dict.pop(x)
         else:
             if problem.isGoalState(x):
@@ -226,6 +226,54 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
+    open_queue = util.PriorityQueue()
+    open_queue.push(problem.getStartState(), 0)
+    open_node = []
+    closed = []
+    result = []
+    result_dict = dict()
+    flag = 1
+    while not open_queue.isEmpty():
+        x = open_queue.pop()
+        if flag == 2:
+            open_node.remove(x)
+            if problem.isGoalState(x):
+                return result_dict[x].split(" ")[::-1]
+            else:
+                child = problem.getSuccessors(x)
+                closed.append(x)
+            for c in child:
+                if c[0] not in closed and c[0] not in open_node:
+                    c = list(c)
+                    c[1] = c[1] + " " + result_dict[x]
+                    c = tuple(c)
+                    result_dict[c[0]] = c[1]
+                    cost = problem.getCostOfActions(c[1].split(" ")[::-1]) + heuristic(c[0], problem)
+                    open_queue.push(c[0], cost)
+                    open_node.append(c[0])
+                elif c[0] in open_node:
+                    c = list(c)
+                    c[1] = c[1] + " " + result_dict[x]
+                    c = tuple(c)
+                    new_cost = problem.getCostOfActions(c[1].split(" ")[::-1])
+                    old_cost = problem.getCostOfActions(result_dict[c[0]].split(" ")[::-1])
+                    if new_cost < old_cost:
+                        result_dict[c[0]] = c[1]
+                        open_queue.update(c[0], new_cost + heuristic(c[0], problem))
+            result_dict.pop(x)
+        else:
+            if problem.isGoalState(x):
+                return result
+            else:
+                child = problem.getSuccessors(x)
+                closed.append(x)
+            for c in child:
+                if c[0] not in closed:
+                    cost = problem.getCostOfActions(c[1].split(" ")[::-1]) + heuristic(c[0], problem)
+                    open_queue.update(c[0], cost)
+                    result_dict[c[0]] = c[1]
+                    open_node.append(c[0])
+        flag = 2
     util.raiseNotDefined()
 
 
